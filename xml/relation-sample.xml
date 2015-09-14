@@ -1,0 +1,11 @@
+<Relation>
+	<CommonID>55f623ace41d5524d0000001</CommonID>
+	<Reference>
+		<Endpoint>SAP</Endpoint>
+		<Id>111111</Id>
+	</Reference>
+	<Reference>
+		<Endpoint>salesforce</Endpoint>
+		<Id>222222</Id>
+	</Reference>
+</Relation>
