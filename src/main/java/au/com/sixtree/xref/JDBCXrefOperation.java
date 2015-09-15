@@ -55,9 +55,16 @@ public class JDBCXrefOperation implements XrefOperation {
 		return getRelation(relation.getId());
 	}
 
-	public Relation findRelationByCommonId(String commonId, String entitySet,
-			String tenant) throws EntityNotFoundException {
-		return getRelationByCommonID(commonId);
+	public Relation findRelationByCommonId(String commonId, String entitySet, String tenant) throws EntityNotFoundException {
+		Relation cachedRelation = cacheAccessor.getRelationByCommonId(tenant, entitySet, commonId);
+		if(cachedRelation != null) {
+			return cachedRelation;
+		} else {
+			Relation uncachedRelation = getRelationByCommonID(commonId);
+			cacheAccessor.putRelationByCommonId(tenant, entitySet, commonId, uncachedRelation);
+			return uncachedRelation;
+			
+		}
 	}
 
 	public Relation deleteReference(String endpoint, String commonId,

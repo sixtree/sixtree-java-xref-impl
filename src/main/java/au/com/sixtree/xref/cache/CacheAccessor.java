@@ -27,11 +27,32 @@ public class CacheAccessor {
 		log.trace("Cache miss for Endpoint: "+endpointKey);
 		return null;
 	}
+
+	public Relation getRelationByCommonId(String tenant, String entitySet,
+			String commonId) {
+		String cacheKey = createCacheKey(tenant, entitySet);
+		Cache cache = getOrAddCache(cacheKey);
+		Element element = cache.get(commonId);
+		if(element != null) {
+			log.trace("Cache hit for CommonId: "+commonId);
+			return (Relation)element.getObjectValue();
+		}
+		log.trace("Cache miss for CommonId: "+commonId);
+		return null;
+	}
+	
 	public void putRelationByEndpoint(String tenant, String entitySet, String endpoint, String endpointId, Relation relation) {
 		String cacheKey = createCacheKey(tenant, entitySet);
 		Cache cache = getOrAddCache(cacheKey);
 		cache.put(new Element(createEndpointKey(endpoint, endpointId), relation));
 	}
+	
+	public void putRelationByCommonId(String tenant, String entitySet, String commonId, Relation relation) {
+		String cacheKey = createCacheKey(tenant, entitySet);
+		Cache cache = getOrAddCache(cacheKey);
+		cache.put(new Element(commonId, relation));
+		
+	}	
 
 	private Cache getOrAddCache(String cacheKey) {
 		if(manager == null) {
@@ -58,6 +79,7 @@ public class CacheAccessor {
 	public void setManager(CacheManager manager) {
 		this.manager = manager;
 	}
+
 	
 	
 }

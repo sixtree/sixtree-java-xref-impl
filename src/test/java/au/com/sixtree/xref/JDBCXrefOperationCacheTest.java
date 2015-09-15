@@ -37,7 +37,7 @@ public class JDBCXrefOperationCacheTest extends TestCase {
 	}
 	
 	@Test
-	public void testFindRelation() throws JAXBException, EntityNotFoundException {
+	public void testFindRelationByEndpoint() throws JAXBException, EntityNotFoundException {
 		Relation relation = RelationFactory.createRelation();
 		relation.getReference().add(RelationFactory.createRelationReference("salesforce", "1111"));
 		relation.getReference().add(RelationFactory.createRelationReference("sap", "2222"));
@@ -52,6 +52,26 @@ public class JDBCXrefOperationCacheTest extends TestCase {
 		start = System.currentTimeMillis();
 		for (int i = 0; i < numCalls; i++) {
 			relation = xrefOperation.findRelation("customer", "sixtree", "sap", "2222");
+		}
+		log.info(numCalls+" calls hitting cache find took in total "+(System.currentTimeMillis() - start)+"ms");
+	}
+	
+	@Test
+	public void testFindRelationByCommonId() throws JAXBException, EntityNotFoundException {
+		Relation relation = RelationFactory.createRelation();
+		relation.getReference().add(RelationFactory.createRelationReference("salesforce", "1111"));
+		relation.getReference().add(RelationFactory.createRelationReference("sap", "2222"));
+		relation = xrefOperation.createRelation("customer", "sixtree", relation);
+		
+		//Cache miss
+		long start = System.currentTimeMillis();
+		relation = xrefOperation.findRelationByCommonId(relation.getCommonID(), "customer", "sixtree");
+		log.info("Cache miss find took "+(System.currentTimeMillis() - start)+"ms");
+		
+		int numCalls = 1000;
+		start = System.currentTimeMillis();
+		for (int i = 0; i < numCalls; i++) {
+			relation = xrefOperation.findRelationByCommonId(relation.getCommonID(), "customer", "sixtree");
 		}
 		log.info(numCalls+" calls hitting cache find took in total "+(System.currentTimeMillis() - start)+"ms");
 	}
