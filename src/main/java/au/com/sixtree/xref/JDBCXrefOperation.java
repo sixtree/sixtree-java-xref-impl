@@ -15,6 +15,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import au.com.sixtree.xref.cache.CacheAccessor;
 import au.com.sixtree.xref.model.EntityNotFoundException;
 import au.com.sixtree.xref.model.Relation;
 import au.com.sixtree.xref.model.Relation.Reference;
@@ -23,14 +24,21 @@ import au.com.sixtree.xref.model.RelationFactory;
 public class JDBCXrefOperation implements XrefOperation {
 	
 	private JdbcTemplate jdbcTemplate;
+	private CacheAccessor cacheAccessor = new CacheAccessor();
 
 	public Relation findRelation(String entitySet, String tenant, String endpoint, String endpointId) throws EntityNotFoundException {
-		Integer entityTypeId = findEntityType(tenant, entitySet);
-		return findRelationByEndpointAndEndpointID(entityTypeId, endpoint, endpointId);
+		Relation cachedRelation = cacheAccessor.getRelationByEndpoint(tenant, entitySet, endpoint, endpointId);
+		if(cachedRelation != null) {
+			return cachedRelation;
+		} else {
+			Integer entityTypeId = findEntityType(tenant, entitySet);
+			Relation uncachedRelation = findRelationByEndpointAndEndpointID(entityTypeId, endpoint, endpointId);
+			cacheAccessor.putRelationByEndpoint(tenant, entitySet, endpoint, endpointId, uncachedRelation);
+			return uncachedRelation;
+		}
 	}
 
-	public Relation createRelation(final String entitySet, final String tenant,
-			Relation relation) throws EntityNotFoundException {
+	public Relation createRelation(final String entitySet, final String tenant, Relation relation) throws EntityNotFoundException {
 		Integer entityTypeId = findOrCreateEntityType(tenant, entitySet);
 		Integer relationId = saveRelation(entityTypeId);
 		for(Reference reference : relation.getReference()) {
@@ -66,14 +74,6 @@ public class JDBCXrefOperation implements XrefOperation {
 		return getRelation(relation.getId());
 	}
 
-	public JdbcTemplate getJdbcTemplate() {
-		return jdbcTemplate;
-	}
-
-	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-		this.jdbcTemplate = jdbcTemplate;
-	}
-	
 	private Integer findOrCreateEntityType(final String tenant, final String entitySet) {
 		Integer entityTypeId = findEntityType(tenant, entitySet);
 		if(entityTypeId == null) {
@@ -223,5 +223,22 @@ public class JDBCXrefOperation implements XrefOperation {
 			throw new EntityNotFoundException(errorMessage);
 		}
 	}
+
+	public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
+
+	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+		this.jdbcTemplate = jdbcTemplate;
+	}
+
+	public CacheAccessor getCacheAccessor() {
+		return cacheAccessor;
+	}
+
+	public void setCacheAccessor(CacheAccessor cacheAccessor) {
+		this.cacheAccessor = cacheAccessor;
+	}
+	
 
 }

@@ -17,6 +17,8 @@ public class CacheAccessorTest extends TestCase {
 
 	@Test
 	public void testRoundTrip() throws JAXBException {
+		String tenant = "sixtree";
+		String entitySet = "customers";
 		String endpoint = "salesforce";
 		String endpointId = "1111";
 		
@@ -26,11 +28,11 @@ public class CacheAccessorTest extends TestCase {
 		
 		CacheAccessor cacheAccessor = new CacheAccessor();
 		cacheAccessor.setManager(CacheManager.create());
-		Relation cacheCheckA = cacheAccessor.getRelationByEndpoint(endpoint, endpointId);
+		Relation cacheCheckA = cacheAccessor.getRelationByEndpoint(tenant, entitySet, endpoint, endpointId);
 		assertNull(cacheCheckA);
 		
-		cacheAccessor.putRelationByEndpoint(endpoint, endpointId, relation);
-		Relation cacheCheckB = cacheAccessor.getRelationByEndpoint(endpoint, endpointId);
+		cacheAccessor.putRelationByEndpoint(tenant, entitySet, endpoint, endpointId, relation);
+		Relation cacheCheckB = cacheAccessor.getRelationByEndpoint(tenant, entitySet, endpoint, endpointId);
 		assertNotNull(cacheCheckB);
 		assertEquals(endpoint, cacheCheckB.getReference().get(0).getEndpoint());
 		
