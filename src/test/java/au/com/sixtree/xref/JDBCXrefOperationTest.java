@@ -64,7 +64,7 @@ public class JDBCXrefOperationTest extends TestCase {
 		assertEquals(2, relation.getReference().size());
 		assertEquals("salesforce", relation.getReference().get(0).getEndpoint());
 		assertEquals("1111", relation.getReference().get(0).getEndpointId());
-		relation = xrefOperation.deleteReference("salesforce", relation.getCommonID(), "customer", "sixtree");
+		relation = xrefOperation.deleteReference(relation.getCommonID(), "customer", "sixtree", "salesforce", "1111");
 		assertNotNull(relation.getCommonID());
 		assertEquals(1, relation.getReference().size());
 		

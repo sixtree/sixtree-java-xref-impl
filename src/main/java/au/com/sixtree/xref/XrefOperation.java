@@ -15,10 +15,11 @@ public interface XrefOperation {
 	        String tenant,
 	        Relation relation) throws EntityNotFoundException;
 	
-	public Relation deleteReference(String endpoint,
-	        String commonId,
-	        String entitySet,
-	        String tenant) throws EntityNotFoundException;
+	public Relation deleteReference(String commonId, 
+			String entitySet, 
+			String tenant, 
+			String endpoint, 
+			String endpointId) throws EntityNotFoundException;
 	
 	public Relation findRelation(String entitySet,
 	        String tenant,

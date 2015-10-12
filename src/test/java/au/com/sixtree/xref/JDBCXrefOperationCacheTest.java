@@ -41,17 +41,17 @@ public class JDBCXrefOperationCacheTest extends TestCase {
 		Relation relation = RelationFactory.createRelation();
 		relation.getReference().add(RelationFactory.createRelationReference("salesforce", "1111"));
 		relation.getReference().add(RelationFactory.createRelationReference("sap", "2222"));
-		relation = xrefOperation.createRelation("customer", "sixtree", relation);
+		relation = xrefOperation.createRelation("customer", "viva", relation);
 
 		//Cache miss
 		long start = System.currentTimeMillis();
-		relation = xrefOperation.findRelation("customer", "sixtree", "sap", "2222");
+		relation = xrefOperation.findRelation("customer", "viva", "sap", "2222");
 		log.info("Cache miss find took "+(System.currentTimeMillis() - start)+"ms");
 		
 		int numCalls = 1000;
 		start = System.currentTimeMillis();
 		for (int i = 0; i < numCalls; i++) {
-			relation = xrefOperation.findRelation("customer", "sixtree", "sap", "2222");
+			relation = xrefOperation.findRelation("customer", "viva", "sap", "2222");
 		}
 		log.info(numCalls+" calls hitting cache find took in total "+(System.currentTimeMillis() - start)+"ms");
 	}
@@ -61,17 +61,17 @@ public class JDBCXrefOperationCacheTest extends TestCase {
 		Relation relation = RelationFactory.createRelation();
 		relation.getReference().add(RelationFactory.createRelationReference("salesforce", "1111"));
 		relation.getReference().add(RelationFactory.createRelationReference("sap", "2222"));
-		relation = xrefOperation.createRelation("customer", "sixtree", relation);
+		relation = xrefOperation.createRelation("customer", "viva", relation);
 		
 		//Cache miss
 		long start = System.currentTimeMillis();
-		relation = xrefOperation.findRelationByCommonId(relation.getCommonID(), "customer", "sixtree");
+		relation = xrefOperation.findRelationByCommonId(relation.getCommonID(), "customer", "viva");
 		log.info("Cache miss find took "+(System.currentTimeMillis() - start)+"ms");
 		
 		int numCalls = 1000;
 		start = System.currentTimeMillis();
 		for (int i = 0; i < numCalls; i++) {
-			relation = xrefOperation.findRelationByCommonId(relation.getCommonID(), "customer", "sixtree");
+			relation = xrefOperation.findRelationByCommonId(relation.getCommonID(), "customer", "viva");
 		}
 		log.info(numCalls+" calls hitting cache find took in total "+(System.currentTimeMillis() - start)+"ms");
 	}

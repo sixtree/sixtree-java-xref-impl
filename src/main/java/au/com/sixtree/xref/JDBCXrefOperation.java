@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.log4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -22,15 +23,17 @@ import au.com.sixtree.xref.model.Relation.Reference;
 import au.com.sixtree.xref.model.RelationFactory;
 
 public class JDBCXrefOperation implements XrefOperation {
-	
+	private static final Logger log = Logger.getLogger(JDBCXrefOperation.class);
 	private JdbcTemplate jdbcTemplate;
 	private CacheAccessor cacheAccessor = new CacheAccessor();
 
 	public Relation findRelation(String entitySet, String tenant, String endpoint, String endpointId) throws EntityNotFoundException {
 		Relation cachedRelation = cacheAccessor.getRelationByEndpoint(tenant, entitySet, endpoint, endpointId);
 		if(cachedRelation != null) {
+			log.debug("Cache hit for endpoint "+endpoint+" and id "+endpointId);
 			return cachedRelation;
 		} else {
+			log.debug("Cache miss for endpoint "+endpoint+" and id "+endpointId);
 			Integer entityTypeId = findEntityType(tenant, entitySet);
 			Relation uncachedRelation = findRelationByEndpointAndEndpointID(entityTypeId, endpoint, endpointId);
 			cacheAccessor.putRelationByEndpoint(tenant, entitySet, endpoint, endpointId, uncachedRelation);
@@ -44,13 +47,18 @@ public class JDBCXrefOperation implements XrefOperation {
 		for(Reference reference : relation.getReference()) {
 			saveReference(relationId, reference.getEndpoint(), reference.getEndpointId());
 		}
-		return getRelation(relationId);
+		relation = getRelation(relationId);
+		for(Reference reference : relation.getReference()) {
+			cacheAccessor.putRelationByEndpoint(tenant, entitySet, reference.getEndpoint(), reference.getEndpointId(), relation);
+		}
+		return relation;
 	}
 
 	public Relation updateRelation(String entitySet, String tenant, Relation relation) throws EntityNotFoundException {
 		Relation currentRelation = getRelationByCommonID(relation.getCommonID());
 		for(Reference reference : relation.getReference()) {
 			saveOrUpdateReference(currentRelation.getId(), relation.getCommonID(), reference.getEndpoint(), reference.getEndpointId());
+			cacheAccessor.putRelationByEndpoint(tenant, entitySet, reference.getEndpoint(), reference.getEndpointId(), relation);
 		}
 		return getRelation(relation.getId());
 	}
@@ -58,8 +66,10 @@ public class JDBCXrefOperation implements XrefOperation {
 	public Relation findRelationByCommonId(String commonId, String entitySet, String tenant) throws EntityNotFoundException {
 		Relation cachedRelation = cacheAccessor.getRelationByCommonId(tenant, entitySet, commonId);
 		if(cachedRelation != null) {
+			log.debug("Cache hit for common id "+commonId);
 			return cachedRelation;
 		} else {
+			log.debug("Cache miss for common id "+commonId);
 			Relation uncachedRelation = getRelationByCommonID(commonId);
 			cacheAccessor.putRelationByCommonId(tenant, entitySet, commonId, uncachedRelation);
 			return uncachedRelation;
@@ -67,18 +77,21 @@ public class JDBCXrefOperation implements XrefOperation {
 		}
 	}
 
-	public Relation deleteReference(String endpoint, String commonId,
-			String entitySet, String tenant) throws EntityNotFoundException {
+	public Relation deleteReference(String commonId, String entitySet, String tenant, String endpoint, String endpointId) throws EntityNotFoundException {
 		Relation relation = findRelationByCommonId(commonId, entitySet, tenant);
 		deleteReference(relation.getId(), endpoint);
+		cacheAccessor.deleteRelationByEndpoint(tenant, entitySet, endpoint, endpointId);
 		return getRelation(relation.getId());
 	}
 
 	public Relation addOrUpdateReference(String endpointId, String endpoint,
 			String commonId, String entitySet, String tenant) throws EntityNotFoundException {
 		Relation relation = findRelationByCommonId(commonId, entitySet, tenant);
-		saveOrUpdateReference(relation.getId(), commonId, endpoint, endpointId);;
-		return getRelation(relation.getId());
+		saveOrUpdateReference(relation.getId(), commonId, endpoint, endpointId);
+		relation = getRelation(relation.getId());
+		cacheAccessor.putRelationByEndpoint(tenant, entitySet, endpoint, endpointId, relation);
+		cacheAccessor.putRelationByCommonId(tenant, entitySet, commonId, relation);
+		return relation;
 	}
 
 	private Integer findOrCreateEntityType(final String tenant, final String entitySet) {
