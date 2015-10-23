@@ -26,7 +26,7 @@ public class JDBCXrefOperation implements XrefOperation {
 	private static final Logger log = Logger.getLogger(JDBCXrefOperation.class);
 	private JdbcTemplate jdbcTemplate;
 	private CacheAccessor cacheAccessor = new CacheAccessor();
-
+	
 	public Relation findRelation(String entitySet, String tenant, String endpoint, String endpointId) throws EntityNotFoundException {
 		Relation cachedRelation = cacheAccessor.getRelationByEndpoint(tenant, entitySet, endpoint, endpointId);
 		if(cachedRelation != null) {

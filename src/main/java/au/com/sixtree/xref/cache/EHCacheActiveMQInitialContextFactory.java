@@ -12,6 +12,13 @@ import net.sf.ehcache.distribution.jms.JMSUtil;
 
 import org.apache.activemq.jndi.ActiveMQInitialContextFactory;
 
+/** This class is no longer needed as you can use dynamicQueues and dynamicTopics that are created
+ * when JNDI is initialised.
+ * 
+ * @author damianharvey
+ *
+ */
+@Deprecated
 public class EHCacheActiveMQInitialContextFactory extends ActiveMQInitialContextFactory{
 
 	/**

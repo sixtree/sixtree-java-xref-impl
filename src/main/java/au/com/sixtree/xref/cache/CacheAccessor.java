@@ -19,7 +19,19 @@ public class CacheAccessor {
 	private CacheManager manager;
 	private static final Logger log = Logger.getLogger(CacheAccessor.class);
 	private static final String EHCACHECONFIGFILEPATH = "EHCACHECONFIGFILEPATH";
+	private static final String EHCACHEDEFAULTCACHEKEY = "EHCACHEDEFAULTCACHEKEY";
 	
+	public CacheAccessor() {
+		String defaultCacheKey = System.getProperty(EHCACHEDEFAULTCACHEKEY);
+		if(defaultCacheKey != null) {
+			warmUpCache(defaultCacheKey);
+		}
+	}
+	
+	private void warmUpCache(String cacheKey) {
+		getOrAddCache(cacheKey);
+	}
+
 	public Relation getRelationByEndpoint(String tenant, String entitySet, String endpoint, String endpointId) {
 		String cacheKey = createCacheKey(tenant, entitySet);
 		Cache cache = getOrAddCache(cacheKey);
