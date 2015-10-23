@@ -336,15 +336,27 @@ Here is an example of CacheManager level resource tuning, which will use up to 4
     * acknowledgementMode - the JMS Acknowledgement mode for both publisher and subscriber. The available choices are
                             AUTO_ACKNOWLEDGE, DUPS_OK_ACKNOWLEDGE and SESSION_TRANSACTED. The default is AUTO_ACKNOWLEDGE.
     -->
+<!-- 	<cacheManagerPeerProviderFactory -->
+<!--             class="net.sf.ehcache.distribution.jms.JMSCacheManagerPeerProviderFactory" -->
+<!--             properties="initialContextFactoryName=au.com.sixtree.xref.cache.EHCacheActiveMQInitialContextFactory, -->
+<!-- 			providerURL=tcp://localhost:61616, -->
+<!-- 			userName=admin,password=admin,listenToTopic=true,acknowledgementMode=AUTO_ACKNOWLEDGE, -->
+<!-- 			replicationTopicConnectionFactoryBindingName=topicConnectionFactory, -->
+<!-- 			replicationTopicBindingName=ehcachetopic, -->
+<!-- 			getQueueConnectionFactoryBindingName=queueConnectionFactory, -->
+<!-- 			getQueueBindingName=ehcachequeue" -->
+<!--             propertySeparator="," -->
+<!--     /> -->
 	<cacheManagerPeerProviderFactory
             class="net.sf.ehcache.distribution.jms.JMSCacheManagerPeerProviderFactory"
-            properties="initialContextFactoryName=au.com.sixtree.xref.cache.EHCacheActiveMQInitialContextFactory,
+            properties="
+            initialContextFactoryName=org.apache.activemq.jndi.ActiveMQInitialContextFactory,
 			providerURL=tcp://localhost:61616,
 			userName=admin,password=admin,listenToTopic=true,acknowledgementMode=AUTO_ACKNOWLEDGE,
-			replicationTopicConnectionFactoryBindingName=topicConnectionFactory,
-			replicationTopicBindingName=ehcachetopic,
-			getQueueConnectionFactoryBindingName=queueConnectionFactory,
-			getQueueBindingName=ehcachequeue"
+ 			replicationTopicConnectionFactoryBindingName=TopicConnectionFactory,
+			replicationTopicBindingName=dynamicTopics/ehcachetopicx,
+ 			getQueueConnectionFactoryBindingName=QueueConnectionFactory,
+			getQueueBindingName=dynamicQueues/ehcachequeuex"
             propertySeparator=","
     />
 
@@ -395,13 +407,25 @@ Here is an example of CacheManager level resource tuning, which will use up to 4
              replicateRemovals=false, loaderArgument=viva:customer"
               propertySeparator=","/>
            <cacheLoaderFactory class="net.sf.ehcache.distribution.jms.JMSCacheLoaderFactory"
-              properties="initialContextFactoryName=au.com.sixtree.xref.cache.EHCacheActiveMQInitialContextFactory,
-                        providerURL=tcp://localhost:61616,loaderArgument=viva:customer,
+              properties="
+            connectionFactoryNames=replicationTopicConnectionFactoryBindingName,
+            initialContextFactoryName=org.apache.activemq.jndi.ActiveMQInitialContextFactory,
+            providerURL=tcp://localhost:61616,loaderArgument=viva:customer,
 			userName=admin,password=admin,acknowledgementMode=AUTO_ACKNOWLEDGE,
-			replicationTopicConnectionFactoryBindingName=topicConnectionFactory,
-			replicationTopicBindingName=ehcachetopic,
-			getQueueConnectionFactoryBindingName=queueConnectionFactory,
-			getQueueBindingName=ehcachequeue,
-                        timeoutMillis=20000,defaultLoaderArgument=viva:customer" propertySeparator="," />
+			replicationTopicConnectionFactoryBindingName=TopicConnectionFactory,
+			replicationTopicBindingName=dynamicTopics/ehcachetopic,
+			getQueueConnectionFactoryBindingName=QueueConnectionFactory,
+			getQueueBindingName=dynamicQueues/ehcachequeue,
+            timeoutMillis=20000,
+            defaultLoaderArgument=viva:customer" propertySeparator="," />
+<!--            <cacheLoaderFactory class="net.sf.ehcache.distribution.jms.JMSCacheLoaderFactory" -->
+<!--               properties="initialContextFactoryName=au.com.sixtree.xref.cache.EHCacheActiveMQInitialContextFactory, -->
+<!--                         providerURL=tcp://localhost:61616,loaderArgument=viva:customer, -->
+<!-- 			userName=admin,password=admin,acknowledgementMode=AUTO_ACKNOWLEDGE, -->
+<!-- 			replicationTopicConnectionFactoryBindingName=topicConnectionFactory, -->
+<!-- 			replicationTopicBindingName=ehcachetopic, -->
+<!-- 			getQueueConnectionFactoryBindingName=queueConnectionFactory, -->
+<!-- 			getQueueBindingName=ehcachequeue, -->
+<!--                         timeoutMillis=20000,defaultLoaderArgument=viva:customer" propertySeparator="," /> -->
     </cache>
 </ehcache>

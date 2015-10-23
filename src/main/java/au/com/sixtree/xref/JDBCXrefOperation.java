@@ -43,6 +43,15 @@ public class JDBCXrefOperation implements XrefOperation {
 
 	public Relation createRelation(final String entitySet, final String tenant, Relation relation) throws EntityNotFoundException {
 		Integer entityTypeId = findOrCreateEntityType(tenant, entitySet);
+		for(Reference reference : relation.getReference()) {
+			try {
+				Relation existingRelation = findRelationByEndpointAndEndpointID(entityTypeId, reference.getEndpoint(), reference.getEndpointId());
+				log.info("Attempting to create Relation but reference already exists for "+reference.getEndpoint()+" and ID "+reference.getEndpointId());
+				return existingRelation;
+			} catch (EntityNotFoundException e) {
+				//ignore
+			}
+		}
 		Integer relationId = saveRelation(entityTypeId);
 		for(Reference reference : relation.getReference()) {
 			saveReference(relationId, reference.getEndpoint(), reference.getEndpointId());
@@ -58,9 +67,12 @@ public class JDBCXrefOperation implements XrefOperation {
 		Relation currentRelation = getRelationByCommonID(relation.getCommonID());
 		for(Reference reference : relation.getReference()) {
 			saveOrUpdateReference(currentRelation.getId(), relation.getCommonID(), reference.getEndpoint(), reference.getEndpointId());
+		}
+		relation = getRelationByCommonID(relation.getCommonID());
+		for(Reference reference : relation.getReference()) {
 			cacheAccessor.putRelationByEndpoint(tenant, entitySet, reference.getEndpoint(), reference.getEndpointId(), relation);
 		}
-		return getRelation(relation.getId());
+		return relation;
 	}
 
 	public Relation findRelationByCommonId(String commonId, String entitySet, String tenant) throws EntityNotFoundException {
