@@ -112,7 +112,7 @@ public class JDBCXrefOperation implements XrefOperation {
 			KeyHolder holder = new GeneratedKeyHolder();
 			jdbcTemplate.update(new PreparedStatementCreator() {
 				public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-					PreparedStatement ps = connection.prepareStatement("insert into entitytype (tenant, entitytype) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
+					PreparedStatement ps = connection.prepareStatement("insert into entitytype (tenant, entitytype) values (?, ?)", new String[] {"id"});
 					ps.setString(1,  tenant);
 					ps.setString(2, entitySet);
 					return ps;
@@ -139,7 +139,7 @@ public class JDBCXrefOperation implements XrefOperation {
 		KeyHolder holder = new GeneratedKeyHolder();
 		jdbcTemplate.update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-				PreparedStatement ps = connection.prepareStatement("insert into relation (commonid, entitytype_id) values (?, ?)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement ps = connection.prepareStatement("insert into relation (commonid, entitytype_id) values (?, ?)", new String[] {"id"});
 				ps.setString(1, UUID.randomUUID().toString());
 				ps.setInt(2, entityTypeId);
 				return ps;
@@ -152,7 +152,7 @@ public class JDBCXrefOperation implements XrefOperation {
 		KeyHolder holder = new GeneratedKeyHolder();
 		jdbcTemplate.update(new PreparedStatementCreator() {
 			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-				PreparedStatement ps = connection.prepareStatement("insert into reference (relation_id, endpoint, endpointid) values (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement ps = connection.prepareStatement("insert into reference (relation_id, endpoint, endpointid) values (?, ?, ?)", new String[] {"id"});
 				ps.setInt(1, relationId);
 				ps.setString(2, endpoint);
 				ps.setString(3, endpointId);
