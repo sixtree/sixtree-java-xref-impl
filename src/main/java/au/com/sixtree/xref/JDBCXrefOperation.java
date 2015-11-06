@@ -98,7 +98,7 @@ public class JDBCXrefOperation implements XrefOperation {
 
 	public Relation addOrUpdateReference(String endpointId, String endpoint,
 			String commonId, String entitySet, String tenant) throws EntityNotFoundException {
-		Relation relation = findRelationByCommonId(commonId, entitySet, tenant);
+		Relation relation = getRelationByCommonID(commonId);
 		saveOrUpdateReference(relation.getId(), commonId, endpoint, endpointId);
 		relation = getRelation(relation.getId());
 		cacheAccessor.putRelationByEndpoint(tenant, entitySet, endpoint, endpointId, relation);
@@ -193,7 +193,7 @@ public class JDBCXrefOperation implements XrefOperation {
 					public Reference mapRow(ResultSet rs, int rowNum)
 							throws SQLException {
 						Reference reference = RelationFactory.createRelationReference(
-								rs.getInt("reference.id"),
+								rs.getInt("id"),
 								rs.getString("endpoint"),
 								rs.getString("endpointid"));
 						return reference;
@@ -203,6 +203,8 @@ public class JDBCXrefOperation implements XrefOperation {
 	
 	private void saveOrUpdateReference(int relationId, String commonID, String endpoint, String endpointId) {
 		try {
+			Relation relation = getRelationByCommonID(commonID);
+			relationId = relation.getId();
 			Reference reference = findReferenceByEndpointAndCommonID(commonID, endpoint);
 			updateReference(reference.getId(), endpoint, endpointId);
 		} catch (EntityNotFoundException e) {
@@ -221,12 +223,12 @@ public class JDBCXrefOperation implements XrefOperation {
 	}
 
 	private Reference findReferenceByEndpointAndCommonID(String commonID, String endpoint) throws EntityNotFoundException {
-		return getEntityById("select * from reference inner join relation on relation.id = reference.relation_id where commonid = ? and endpoint = ?", 
+		return getEntityById("select reference.* from reference inner join relation on relation.id = reference.relation_id where commonid = ? and endpoint = ?", 
 				new Object[] {commonID, endpoint}, new RowMapper<Reference>() {
 					public Reference mapRow(ResultSet rs, int rowNum)
 							throws SQLException {
 						Reference reference = RelationFactory.createRelationReference(
-								rs.getInt("reference.id"),
+								rs.getInt("id"),
 								rs.getString("endpoint"), 
 								rs.getString("endpointid"));
 						return reference;
@@ -235,14 +237,14 @@ public class JDBCXrefOperation implements XrefOperation {
 	}
 	
 	private Relation findRelationByEndpointAndEndpointID(Integer entityTypeId, String endpoint, String endpointId) throws EntityNotFoundException {
-		return getEntityById("select * from reference inner join relation on relation.id = reference.relation_id where entitytype_id = ? and endpoint = ? and endpointid = ?", 
+		return getEntityById("select relation.* from reference inner join relation on relation.id = reference.relation_id where entitytype_id = ? and endpoint = ? and endpointid = ?", 
 				new Object[] {entityTypeId, endpoint, endpointId}, new RowMapper<Relation>() {
 			public Relation mapRow(ResultSet rs, int rowNum)
 					throws SQLException {
 				Relation relation = RelationFactory.createRelation();
-				relation.setId(rs.getInt("relation.id"));
+				relation.setId(rs.getInt("id"));
 				relation.setCommonID(rs.getString("commonid"));
-				relation.getReference().addAll(getReferences(rs.getInt("relation.id")));
+				relation.getReference().addAll(getReferences(rs.getInt("id")));
 				return relation;
 			}}, "Could not find Relation with the provided Identifiers");
 		
